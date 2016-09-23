@@ -251,6 +251,36 @@ values."
    dotspacemacs-whitespace-cleanup nil
    ))
 
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '(;;(axiom      . t)
+   (awk        . t)
+   (ditaa      . t)
+   (emacs-lisp . t)
+   (calc       . t)
+   (clojure    . t)
+   (C          . t)
+   ;; (C++        . t)
+   (dot        . t)
+   ;; (forth      . t)
+   ;; (F90        . t)
+   (gnuplot    . t)
+   (haskell    . t)
+   (java       . t)
+   (js         . t)
+   (latex      . t)
+   (lisp       . t)
+   (octave     . t)
+   (org        . t)
+   (perl       . t)
+   (python     . t)
+   (R          . t)
+   (ruby       . t)
+   (scheme     . t)
+   (sh         . t)
+   (sqlite     . t)
+   ))
+
 (defun dotspacemacs/user-init ()
   "Initialization function for user code.
 It is called immediately after `dotspacemacs/init', before layer configuration
