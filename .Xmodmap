@@ -12,3 +12,8 @@ keycode 64 = Control_L
 add control = Control_L Control_R
 add mod1 = Alt_L Meta_L
 
+! Menü-Taste
+keycode 135 = Pause
+
+clear mod4
+
