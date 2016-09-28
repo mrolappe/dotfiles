@@ -45,7 +45,7 @@ values."
      search-engine
      speed-reading
      sql
-     vim-powerline
+     ;;vim-powerline
      xkcd
      (shell :variables
             shell-default-height 30
@@ -58,7 +58,7 @@ values."
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '()
+   dotspacemacs-additional-packages '(logview)
    ;; A list of packages and/or extensions that will not be install and loaded.
    dotspacemacs-excluded-packages '()
    ;; If non-nil spacemacs will delete any orphan packages, i.e. packages that
@@ -125,7 +125,7 @@ values."
    ;; Default font. `powerline-scale' allows to quickly tweak the mode-line
    ;; size to make separators look not too crappy.
    dotspacemacs-default-font '("Source Code Pro"
-                               :size 13
+                               :size 15
                                :weight normal
                                :width normal
                                :powerline-scale 1.1)
@@ -299,6 +299,43 @@ explicitly specified that a variable should be set before a package is loaded,
 you should place you code here."
   (setq clojure-enable-fancify-symbols t)
   (spacemacs/toggle-evil-cleverparens-on)
+  (require 'keyfreq)
+  (keyfreq-mode 1)
+  (keyfreq-autosave-mode 1)
+
+  (define-key evil-insert-state-map (kbd "# #") (lambda () (interactive) (insert-char #x23) ))
+  (define-key evil-insert-state-map (kbd "<pause> o") "0")
+  (define-key evil-insert-state-map (kbd "<pause> i") "1")
+  (define-key evil-insert-state-map (kbd "<pause> n") "2")
+  (define-key evil-insert-state-map (kbd "<pause> e") "3")
+  (define-key evil-insert-state-map (kbd "<pause> x") "4")
+  (define-key evil-insert-state-map (kbd "<pause> v") "5")
+  (define-key evil-insert-state-map (kbd "<pause> p") "6")
+  (define-key evil-insert-state-map (kbd "<pause> z") "7")
+  (define-key evil-insert-state-map (kbd "<pause> b") "8")
+  (define-key evil-insert-state-map (kbd "<pause> c") "9")
+ 
+  (define-key evil-insert-state-map (kbd "# t") "~")
+  (define-key evil-insert-state-map (kbd "<pause> t") "~")
+  (define-key evil-insert-state-map (kbd "<pause> l") "/")
+  (define-key evil-insert-state-map (kbd "<pause> j") "(")
+  (define-key evil-insert-state-map (kbd "<pause> k") ")")
+  (define-key evil-insert-state-map (kbd "<pause> d") "{")
+  (define-key evil-insert-state-map (kbd "<pause> f") "}")
+  (define-key evil-insert-state-map (kbd "<pause> a") "[")
+  (define-key evil-insert-state-map (kbd "<pause> s") "]")
+  (define-key evil-insert-state-map (kbd "<pause> SPC g") "==")
+  (define-key evil-insert-state-map (kbd "<pause> , g") "!=")
+  (define-key evil-insert-state-map (kbd "<pause> g") "=")
+  (define-key evil-insert-state-map (kbd "<pause> u") "&")
+  (define-key evil-insert-state-map (kbd "<pause> SPC u") "&&")
+  (define-key evil-insert-state-map (kbd "<pause> r") "|")
+  (define-key evil-insert-state-map (kbd "<pause> SPC r") "||")
+
+  (define-key evil-insert-state-map (kbd "s-SPC") 'newline-and-indent)
+  (define-key evil-insert-state-map (kbd "s-ö") 'backward-delete-char-untabify)
+  (define-key evil-insert-state-map (kbd "s-ä") 'delete-char)
+ 
 )
 
 ;; Do not write anything past this comment. This is where Emacs will
@@ -310,7 +347,7 @@ you should place you code here."
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (xterm-color shell-pop multi-term eshell-prompt-extras esh-help zeal-at-point xkcd ws-butler window-numbering which-key volatile-highlights vi-tilde-fringe use-package toc-org sql-indent spray spacemacs-theme spaceline smooth-scrolling smeargle restclient restart-emacs rainbow-delimiters quelpa popwin persp-mode pcre2el paradox page-break-lines orgit org-repo-todo org-present org-pomodoro org-plus-contrib org-bullets open-junk-file noflet neotree move-text mmm-mode markdown-toc magit-gitflow magit-gh-pulls macrostep lorem-ipsum linum-relative leuven-theme info+ indent-guide ido-vertical-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-gitignore helm-flx helm-descbinds helm-dash helm-company helm-c-yasnippet helm-ag google-translate golden-ratio gnuplot github-clone github-browse-file gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ gist gh-md flycheck-pos-tip flycheck-elm flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-tutor evil-surround evil-snipe evil-search-highlight-persist evil-numbers evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-commentary evil-cleverparens evil-args evil-anzu ensime engine-mode elm-mode elisp-slime-nav eclim dockerfile-mode diff-hl define-word company-statistics company-quickhelp clj-refactor clean-aindent-mode cider-eval-sexp-fu buffer-move bracketed-paste auto-yasnippet auto-highlight-symbol auto-compile aggressive-indent adoc-mode adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell))))
+    (logview datetime xterm-color shell-pop multi-term eshell-prompt-extras esh-help zeal-at-point xkcd ws-butler window-numbering which-key volatile-highlights vi-tilde-fringe use-package toc-org sql-indent spray spacemacs-theme spaceline smooth-scrolling smeargle restclient restart-emacs rainbow-delimiters quelpa popwin persp-mode pcre2el paradox page-break-lines orgit org-repo-todo org-present org-pomodoro org-plus-contrib org-bullets open-junk-file noflet neotree move-text mmm-mode markdown-toc magit-gitflow magit-gh-pulls macrostep lorem-ipsum linum-relative leuven-theme info+ indent-guide ido-vertical-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-gitignore helm-flx helm-descbinds helm-dash helm-company helm-c-yasnippet helm-ag google-translate golden-ratio gnuplot github-clone github-browse-file gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ gist gh-md flycheck-pos-tip flycheck-elm flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-tutor evil-surround evil-snipe evil-search-highlight-persist evil-numbers evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-commentary evil-cleverparens evil-args evil-anzu ensime engine-mode elm-mode elisp-slime-nav eclim dockerfile-mode diff-hl define-word company-statistics company-quickhelp clj-refactor clean-aindent-mode cider-eval-sexp-fu buffer-move bracketed-paste auto-yasnippet auto-highlight-symbol auto-compile aggressive-indent adoc-mode adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
