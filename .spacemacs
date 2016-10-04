@@ -37,9 +37,11 @@ values."
      evil-snipe
      git
      github
+     graphviz
      java
      markdown
      org
+     plantuml
      restclient
      scala
      search-engine
@@ -299,9 +301,9 @@ explicitly specified that a variable should be set before a package is loaded,
 you should place you code here."
   (setq clojure-enable-fancify-symbols t)
   (spacemacs/toggle-evil-cleverparens-on)
-  (require 'keyfreq)
-  (keyfreq-mode 1)
-  (keyfreq-autosave-mode 1)
+  ;; (require 'keyfreq)
+  ;; (keyfreq-mode 1)
+  ;; (keyfreq-autosave-mode 1)
 
   (define-key evil-insert-state-map (kbd "# #") (lambda () (interactive) (insert-char #x23) ))
   (define-key evil-insert-state-map (kbd "<pause> o") "0")
@@ -347,7 +349,7 @@ you should place you code here."
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (logview datetime xterm-color shell-pop multi-term eshell-prompt-extras esh-help zeal-at-point xkcd ws-butler window-numbering which-key volatile-highlights vi-tilde-fringe use-package toc-org sql-indent spray spacemacs-theme spaceline smooth-scrolling smeargle restclient restart-emacs rainbow-delimiters quelpa popwin persp-mode pcre2el paradox page-break-lines orgit org-repo-todo org-present org-pomodoro org-plus-contrib org-bullets open-junk-file noflet neotree move-text mmm-mode markdown-toc magit-gitflow magit-gh-pulls macrostep lorem-ipsum linum-relative leuven-theme info+ indent-guide ido-vertical-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-gitignore helm-flx helm-descbinds helm-dash helm-company helm-c-yasnippet helm-ag google-translate golden-ratio gnuplot github-clone github-browse-file gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ gist gh-md flycheck-pos-tip flycheck-elm flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-tutor evil-surround evil-snipe evil-search-highlight-persist evil-numbers evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-commentary evil-cleverparens evil-args evil-anzu ensime engine-mode elm-mode elisp-slime-nav eclim dockerfile-mode diff-hl define-word company-statistics company-quickhelp clj-refactor clean-aindent-mode cider-eval-sexp-fu buffer-move bracketed-paste auto-yasnippet auto-highlight-symbol auto-compile aggressive-indent adoc-mode adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell))))
+    (puml-mode graphviz-dot-mode powerline git-gutter iedit sbt-mode hydra cider spinner bind-map packed f highlight anzu smartparens evil undo-tree flycheck helm helm-core popup avy ht markdown-mode s projectile magit git-commit uuidgen org-projectile org-download ob-http link-hint github-search with-editor evil-visual-mark-mode evil-unimpaired evil-ediff eshell-z dumb-jump company-emacs-eclim column-enforce-mode clojure-snippets logview datetime xterm-color shell-pop multi-term eshell-prompt-extras esh-help zeal-at-point xkcd ws-butler window-numbering which-key volatile-highlights vi-tilde-fringe use-package toc-org sql-indent spray spacemacs-theme spaceline smooth-scrolling smeargle restclient restart-emacs rainbow-delimiters quelpa popwin persp-mode pcre2el paradox page-break-lines orgit org-repo-todo org-present org-pomodoro org-plus-contrib org-bullets open-junk-file noflet neotree move-text mmm-mode markdown-toc magit-gitflow magit-gh-pulls macrostep lorem-ipsum linum-relative leuven-theme info+ indent-guide ido-vertical-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-gitignore helm-flx helm-descbinds helm-dash helm-company helm-c-yasnippet helm-ag google-translate golden-ratio gnuplot github-clone github-browse-file gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ gist gh-md flycheck-pos-tip flycheck-elm flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-tutor evil-surround evil-snipe evil-search-highlight-persist evil-numbers evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-commentary evil-cleverparens evil-args evil-anzu ensime engine-mode elm-mode elisp-slime-nav eclim dockerfile-mode diff-hl define-word company-statistics company-quickhelp clj-refactor clean-aindent-mode cider-eval-sexp-fu buffer-move bracketed-paste auto-yasnippet auto-highlight-symbol auto-compile aggressive-indent adoc-mode adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
