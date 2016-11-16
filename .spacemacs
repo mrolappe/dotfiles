@@ -11,13 +11,21 @@ values."
    ;; `+distribution'. For now available distributions are `spacemacs-base'
    ;; or `spacemacs'. (default 'spacemacs)
    dotspacemacs-distribution 'spacemacs
-   ;; List of additional paths where to look for configuration layers.
+   ;; List of additional paths where to look for configuration layers .
    ;; Paths must have a trailing slash (i.e. `~/.mycontribs/')
    dotspacemacs-configuration-layer-path '()
    ;; List of configuration layers to load. If it is the symbol `all' instead
    ;; of a list then all discovered layers will be installed.
    dotspacemacs-configuration-layers
    '(
+     go
+     javascript
+     fsharp
+     ruby
+     ocaml
+     lua
+     html
+     jmj
      ;; ----------------------------------------------------------------
      ;; Example of useful layers you may want to use right away.
      ;; Uncomment some layer names and press <SPC f e R> (Vim style) or
@@ -27,40 +35,76 @@ values."
      ;; better-defaults
      emacs-lisp
      asciidoc
-     clojure
-     dockerfile
+     (clojure :config (
+                       (setq clojure-enable-fancify-symbols t)
+                       (add-hook 'clojure-mode-hook #'paredit-mode)))
+     docker
      dash
+     deft
      elm
-     eyebrowse
      evil-cleverparens
      evil-commentary
      evil-snipe
      git
      github
      graphviz
+     imenu-list
      java
      markdown
      org
      plantuml
-     restclient
+     ;; purescript
+     racket
+     ;; restclient
+     rust
      scala
+     scheme
      search-engine
+     slack
+     sml
      speed-reading
      sql
-     ;;vim-powerline
-     xkcd
+     vim-powerline
+     ;; xkcd
      (shell :variables
             shell-default-height 30
             shell-default-position 'bottom)
      ;; spell-checking
      syntax-checking
-     version-control
+     (version-control :variables
+                      version-control-diff-tool 'diff-hl
+                      version-control-global-margin t)
      )
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
    ;; packages, then consider creating a layer. You can also put the
    ;; configuration in `dotspacemacs/user-config'.
-   dotspacemacs-additional-packages '(logview)
+   dotspacemacs-additional-packages '(
+                                      highlight-defined
+                                      highlight-blocks
+                                      digit-groups
+                                      highlight-escape-sequences
+                                      highlight-quoted
+                                      highlight-stages
+                                      html-to-hiccup
+                                      ranger
+                                      ;; exwm
+                                      ;; ewmctrl
+                                      ;; 4clojure
+                                      ;; command-log-mode
+                                      ;; beacon
+                                      ;; free-keys
+                                      ;; el-pocket
+                                      ;; itail
+                                      ;; parsec
+                                      ;; kdeconnect
+                                      ;; lispy
+                                      ;; worf
+                                      ;; focus
+                                      ;; keyfreq
+                                      ;; logview
+                                      ;; org-plus-contrib
+                                      )
    ;; A list of packages and/or extensions that will not be install and loaded.
    dotspacemacs-excluded-packages '()
    ;; If non-nil spacemacs will delete any orphan packages, i.e. packages that
@@ -115,10 +159,10 @@ values."
    ;; List of themes, the first of the list is loaded when spacemacs starts.
    ;; Press <SPC> T n to cycle to the next theme in the list (works great
    ;; with 2 themes variants, one dark and one light)
-   dotspacemacs-themes '(spacemacs-dark
+   dotspacemacs-themes '(solarized-dark
+                         spacemacs-dark
                          spacemacs-light
                          solarized-light
-                         solarized-dark
                          leuven
                          monokai
                          zenburn)
@@ -164,7 +208,7 @@ values."
    dotspacemacs-display-default-layout nil
    ;; If non nil then the last auto saved layouts are resume automatically upon
    ;; start. (default nil)
-   dotspacemacs-auto-resume-layouts nil
+   dotspacemacs-auto-resume-layouts t
    ;; Location where to auto-save files. Possible values are `original' to
    ;; auto-save the file in-place, `cache' to auto-save the file to another
    ;; file stored in the cache directory and `nil' to disable auto-saving.
@@ -253,35 +297,6 @@ values."
    dotspacemacs-whitespace-cleanup nil
    ))
 
-(org-babel-do-load-languages
- 'org-babel-load-languages
- '(;;(axiom      . t)
-   (awk        . t)
-   (ditaa      . t)
-   (emacs-lisp . t)
-   (calc       . t)
-   (clojure    . t)
-   (C          . t)
-   ;; (C++        . t)
-   (dot        . t)
-   ;; (forth      . t)
-   ;; (F90        . t)
-   (gnuplot    . t)
-   (haskell    . t)
-   (java       . t)
-   (js         . t)
-   (latex      . t)
-   (lisp       . t)
-   (octave     . t)
-   (org        . t)
-   (perl       . t)
-   (python     . t)
-   (R          . t)
-   (ruby       . t)
-   (scheme     . t)
-   (sh         . t)
-   (sqlite     . t)
-   ))
 
 (defun dotspacemacs/user-init ()
   "Initialization function for user code.
@@ -290,7 +305,10 @@ executes.
  This function is mostly useful for variables that need to be set
 before packages are loaded. If you are unsure, you should try in setting them in
 `dotspacemacs/user-config' first."
-  )
+  (add-hook 'emacs-lisp-mode-hook 'highlight-defined-mode)
+  ;; (add-hook 'emacs-lisp-mode-hook 'highlight-quoted-mode)
+  (add-hook 'emacs-lisp-mode-hook 'highlight-stages-mode)
+)
 
 (defun dotspacemacs/user-config ()
   "Configuration function for user code.
@@ -299,57 +317,20 @@ layers configuration.
 This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place you code here."
-  (setq clojure-enable-fancify-symbols t)
+
   (spacemacs/toggle-evil-cleverparens-on)
-  ;; (require 'keyfreq)
-  ;; (keyfreq-mode 1)
-  ;; (keyfreq-autosave-mode 1)
+  (setq browse-url-browser-function 'browse-url-generic
+        engine/browser-function 'browse-url-generic
+        browse-url-generic-program "google-chrome")
 
-  (define-key evil-insert-state-map (kbd "# #") (lambda () (interactive) (insert-char #x23) ))
-  (define-key evil-insert-state-map (kbd "<pause> o") "0")
-  (define-key evil-insert-state-map (kbd "<pause> i") "1")
-  (define-key evil-insert-state-map (kbd "<pause> n") "2")
-  (define-key evil-insert-state-map (kbd "<pause> e") "3")
-  (define-key evil-insert-state-map (kbd "<pause> x") "4")
-  (define-key evil-insert-state-map (kbd "<pause> v") "5")
-  (define-key evil-insert-state-map (kbd "<pause> p") "6")
-  (define-key evil-insert-state-map (kbd "<pause> z") "7")
-  (define-key evil-insert-state-map (kbd "<pause> b") "8")
-  (define-key evil-insert-state-map (kbd "<pause> c") "9")
- 
-  (define-key evil-insert-state-map (kbd "# t") "~")
-  (define-key evil-insert-state-map (kbd "<pause> t") "~")
-  (define-key evil-insert-state-map (kbd "<pause> l") "/")
-  (define-key evil-insert-state-map (kbd "<pause> j") "(")
-  (define-key evil-insert-state-map (kbd "<pause> k") ")")
-  (define-key evil-insert-state-map (kbd "<pause> d") "{")
-  (define-key evil-insert-state-map (kbd "<pause> f") "}")
-  (define-key evil-insert-state-map (kbd "<pause> a") "[")
-  (define-key evil-insert-state-map (kbd "<pause> s") "]")
-  (define-key evil-insert-state-map (kbd "<pause> SPC g") "==")
-  (define-key evil-insert-state-map (kbd "<pause> , g") "!=")
-  (define-key evil-insert-state-map (kbd "<pause> g") "=")
-  (define-key evil-insert-state-map (kbd "<pause> u") "&")
-  (define-key evil-insert-state-map (kbd "<pause> SPC u") "&&")
-  (define-key evil-insert-state-map (kbd "<pause> r") "|")
-  (define-key evil-insert-state-map (kbd "<pause> SPC r") "||")
+  (setq digit-groups-global-mode t)
 
-  (define-key evil-insert-state-map (kbd "s-SPC") 'newline-and-indent)
-  (define-key evil-insert-state-map (kbd "s-ö") 'backward-delete-char-untabify)
-  (define-key evil-insert-state-map (kbd "s-ä") 'delete-char)
- 
+  (turn-on-hes-mode)
 )
 
 ;; Do not write anything past this comment. This is where Emacs will
 ;; auto-generate custom variable definitions.
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   (quote
-    (puml-mode graphviz-dot-mode powerline git-gutter iedit sbt-mode hydra cider spinner bind-map packed f highlight anzu smartparens evil undo-tree flycheck helm helm-core popup avy ht markdown-mode s projectile magit git-commit uuidgen org-projectile org-download ob-http link-hint github-search with-editor evil-visual-mark-mode evil-unimpaired evil-ediff eshell-z dumb-jump company-emacs-eclim column-enforce-mode clojure-snippets logview datetime xterm-color shell-pop multi-term eshell-prompt-extras esh-help zeal-at-point xkcd ws-butler window-numbering which-key volatile-highlights vi-tilde-fringe use-package toc-org sql-indent spray spacemacs-theme spaceline smooth-scrolling smeargle restclient restart-emacs rainbow-delimiters quelpa popwin persp-mode pcre2el paradox page-break-lines orgit org-repo-todo org-present org-pomodoro org-plus-contrib org-bullets open-junk-file noflet neotree move-text mmm-mode markdown-toc magit-gitflow magit-gh-pulls macrostep lorem-ipsum linum-relative leuven-theme info+ indent-guide ido-vertical-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-gitignore helm-flx helm-descbinds helm-dash helm-company helm-c-yasnippet helm-ag google-translate golden-ratio gnuplot github-clone github-browse-file gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ gist gh-md flycheck-pos-tip flycheck-elm flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-tutor evil-surround evil-snipe evil-search-highlight-persist evil-numbers evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-commentary evil-cleverparens evil-args evil-anzu ensime engine-mode elm-mode elisp-slime-nav eclim dockerfile-mode diff-hl define-word company-statistics company-quickhelp clj-refactor clean-aindent-mode cider-eval-sexp-fu buffer-move bracketed-paste auto-yasnippet auto-highlight-symbol auto-compile aggressive-indent adoc-mode adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell))))
+
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -357,3 +338,13 @@ you should place you code here."
  ;; If there is more than one, they won't work right.
  '(company-tooltip-common ((t (:inherit company-tooltip :weight bold :underline nil))))
  '(company-tooltip-common-selection ((t (:inherit company-tooltip-selection :weight bold :underline nil)))))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(evil-want-Y-yank-to-eol t)
+ '(package-selected-packages
+   (quote
+    (go-guru go-eldoc company-go go-mode web-beautify livid-mode skewer-mode simple-httpd js2-refactor js2-mode js-doc company-tern dash-functional tern coffee-mode fsharp-mode company-quickhelp ob-sml sml-mode groovy-mode gradle-mode geiser ranger racket-mode faceup html-to-hiccup slack emojify circe oauth2 websocket highlight-stages highlight-quoted highlight-escape-sequences digit-groups highlight-blocks highlight-defined worf logview datetime focus parsec lispy zoutline swiper ivy itail osc xelb org sbt-mode docker-tramp rust-mode auto-complete inflections cider seq clojure-mode multiple-cursors eclim anzu iedit smartparens highlight undo-tree flycheck git-gutter gh ht yasnippet projectile helm helm-core magit magit-popup git-commit with-editor dash async 4clojure zenburn-theme zeal-at-point xterm-color ws-butler window-numbering which-key web-mode volatile-highlights vi-tilde-fringe uuidgen utop use-package tuareg toml-mode toc-org tagedit sql-indent spray spacemacs-theme spaceline sonic-pi solarized-theme smeargle slim-mode shell-pop scss-mode sass-mode rvm ruby-tools ruby-test-mode rubocop rspec-mode robe restart-emacs rbenv rake rainbow-delimiters racer quelpa pug-mode popwin plantuml-mode persp-mode paradox orgit org-projectile org-present org-pomodoro org-plus-contrib org-download org-bullets open-junk-file ocp-indent noflet neotree multi-term move-text monokai-theme mmm-mode minitest merlin markdown-toc magit-gitflow magit-gh-pulls macrostep lua-mode lorem-ipsum linum-relative link-hint less-css-mode keyfreq kdeconnect info+ indent-guide imenu-list ido-vertical-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-projectile helm-mode-manager helm-make helm-gitignore helm-flx helm-descbinds helm-dash helm-css-scss helm-company helm-c-yasnippet helm-ag graphviz-dot-mode google-translate golden-ratio gnuplot github-search github-clone github-browse-file gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ gist gh-md flycheck-rust flycheck-pos-tip flycheck-elm flx-ido fill-column-indicator fancy-battery eyebrowse exwm expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-snipe evil-search-highlight-persist evil-numbers evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-commentary evil-cleverparens evil-args evil-anzu eshell-z eshell-prompt-extras esh-help ensime engine-mode emmet-mode elm-mode elisp-slime-nav dumb-jump dockerfile-mode docker diff-hl deft define-word company-web company-statistics company-emacs-eclim column-enforce-mode clojure-snippets clj-refactor clean-aindent-mode cider-eval-sexp-fu chruby cargo bundler auto-yasnippet auto-highlight-symbol auto-compile aggressive-indent adoc-mode adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell))))
+
