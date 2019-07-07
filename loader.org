@@ -1,0 +1,434 @@
+#+TITLE: LOAD"*",8,1
+
+* server
+
+  emacs server starten
+
+  #+BEGIN_SRC emacs-lisp
+  (require 'server)
+  (unless (server-running-p) (server-start))
+  #+END_SRC
+
+* pakete
+
+  #+BEGIN_SRC emacs-lisp
+  (require 'package)
+
+  (defvar gnu '("gnu" . "https://elpa.gnu.org/packages/"))
+  (defvar melpa '("melpa" . "https://melpa.org/packages/"))
+  (defvar melpa-stable '("melpa-stable" . "https://stable.melpa.org/packages/"))
+
+  (setq package-archives nil)
+  (add-to-list 'package-archives melpa-stable t)
+  (add-to-list 'package-archives melpa t)
+  (add-to-list 'package-archives gnu t)
+
+  (package-initialize)
+
+  (unless (and (file-exists-p (concat init-dir "elpa/archives/gnu"))
+               (file-exists-p (concat init-dir "elpa/archives/melpa"))
+               (file-exists-p (concat init-dir "elpa/archives/melpa-stable")))
+    (package-refresh-contents))
+
+  (defun package-install-if-not-installed (package)
+    (if (not (package-installed-p package))
+      (package-install package)))
+
+
+  #+END_SRC
+
+  [[https://github.com/jwiegley/use-package][use-package]] installieren
+
+  #+BEGIN_SRC emacs-lisp
+  (package-install-if-not-installed 'use-package)
+  #+END_SRC
+  
+
+* farb-thema
+
+  lieblingsliste: leuven,, monokai, solarized
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package solarized-theme
+    :ensure t
+    :config (load-theme 'solarized-light t))
+  #+END_SRC
+
+* evil
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package evil 
+    :ensure t
+    :config (evil-mode))
+  #+END_SRC
+
+  evil-commentary https://github.com/linktohack/evil-commentary
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package evil-commentary :disabled
+    :ensure t)
+  #+END_SRC
+
+* navigation
+
+  imenu via counsel
+  #+BEGIN_SRC emacs-lisp
+  (use-package ivy
+    :ensure t
+    :bind ("C-s" . swiper)
+    :config (ivy-mode))
+
+  (use-package ivy-hydra
+    :ensure t)
+
+  (use-package counsel
+    :ensure t)
+
+  (use-package swiper
+    :ensure t
+    :diminish ivy-mode
+    :bind*
+      (("M-i" . counsel-imenu)))
+  #+END_SRC
+
+  navigation zwischen fenstern
+  #+BEGIN_SRC emacs-lisp
+  (use-package ace-window
+    :bind*
+      (("<f9>" . ace-window)
+      ("C-o" . ace-window)))
+  #+END_SRC
+  
+  link-navigation
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package ace-link
+    :ensure t
+    :config (ace-link-setup-default)
+    :config (define-key org-mode-map (kbd "M-o") 'ace-link-org))
+  #+END_SRC
+  
+  navigation nach präfix - [[https://github.com/abo-abo/avy][avy - Jump to things in Emacs tree-style]]
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package avy
+    :config (global-set-key (kbd "C-:") 'avy-goto-char))
+  #+END_SRC
+
+* tastenbelegung
+
+  [[https://github.com/justbur/emacs-which-key][which-key - Emacs package that displays available keybindings in popup]]
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package which-key
+    :ensure t
+    :config (which-key-mode))
+
+  #+END_SRC
+
+* verschiedenes
+
+  keine scrollbalken und keine werkzeugleiste anzeigen
+  #+BEGIN_SRC emacs-lisp
+  (scroll-bar-mode -1)
+  (tool-bar-mode -1)
+  #+END_SRC
+
+  bei nachfragen y/n statt yes/no
+
+  #+BEGIN_SRC emacs-lisp
+  (fset 'yes-or-no-p 'y-or-n-p)
+  #+END_SRC
+
+
+  Bookmarks
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package bm
+    :ensure t)
+  #+END_SRC
+
+* SCM: git, etc.
+
+  [[https://github.com/magit/magit/][It's Magit! A Git porcelain inside Emacs.]]
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package magit
+    :ensure t
+    :defer)
+  #+END_SRC
+
+  [[https://github.com/ryuslash/git-auto-commit-mode/][git-auto-commit-mode - Emacs minor mode to automatically commit (and push) a git repository.]]
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package git-auto-commit-mode
+    :ensure t
+    :config (setq gac-automatically-push-p t))
+  #+END_SRC
+
+  [[https://github.com/h/find-file-in-repository/][Emacs: Quickly find files in a git, mercurial or other type of repository]]
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package find-file-in-repository
+    :disabled
+    :config (global-set-key (kbd "C-x f") 'find-file-in-repository))
+  #+END_SRC
+
+* yasnippet
+
+  [[https://github.com/joaotavora/yasnippet/][A template system for Emacs]]
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package yasnippet
+    :diminish yas)
+  #+END_SRC
+
+* klammern/trenner
+  schließende klammer bzw. ausdruck hervorheben
+  #+BEGIN_SRC emacs-lisp
+  (setq show-paren-style 'mixed)
+  (show-paren-mode)
+  #+END_SRC
+
+  schliessende klammer automatisch einfügen
+  #+BEGIN_SRC emacs-lisp
+  (electric-pair-mode 1)
+  #+END_SRC
+
+  [[https://github.com/Fuco1/smartparens/][Minor mode for Emacs that deals with parens pairs and tries to be smart about it.]]
+
+  aktivieren für modes, die von prog-mode ableiten
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package smartparens
+    :ensure t
+    :config (add-hook 'prog-mode-hook #'smartparens-mode))
+  #+END_SRC
+
+  farbliche hervorhebung zugehöriger paare
+
+  [[https://github.com/Fanael/rainbow-delimiters/][Emacs rainbow delimiters mode]]
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package rainbow-delimiters
+    :ensure t
+    :config (add-hook 'prog-mode-hook #'rainbow-delimiters-mode))
+
+  #+END_SRC
+* deft
+
+  [[https://github.com/jrblevin/deft][Deft for Emacs]]
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package deft
+    :ensure t
+    :bind ("<f12>" . deft)
+    :commands deft
+    :config
+      (setq deft-directory "~/org-alle"
+        deft-use-filename-as-title nil
+        deft-use-filter-string-for-filename t
+
+        ;; automatisch generierten titel in org-mode-dateien mit #+TITLE: versehen
+        deft-org-mode-title-prefix t
+
+        ;; nach title (dateiname) sortieren
+        deft-current-sort-method 'title
+
+        ;; auch unterverzeichnisse berücksichtigen
+        deft-recursive t
+
+        deft-auto-save-interval 30))
+
+  #+END_SRC
+* hydra
+
+  [[https://github.com/abo-abo/hydra][make Emacs bindings that stick around]]
+
+  #+BEGIN_SRC emacs-lisp
+  (defun mro-config-hydra ()
+    (defhydra hydra-win (global-map "<apps> w")
+      "win"
+
+      ("a" window-maximize "max")
+      ("q" quit-window "quit"))
+
+    (defhydra hydra-buf (global-map "<apps> b")
+      "buffer"
+
+      ("d" evil-delete-buffer "evil-delete")
+      ("b" ivy-switch-buffer "switch buffer"))
+
+    (defhydra hydra-jump (global-map "<apps> j")
+      "jump"
+
+      ("i" counsel-imenu "imenu"))
+
+    (defhydra hydra-file (global-map "<apps> f")
+      "file"
+
+      ("f" counsel-find-file "find-file")
+      ("r" counsel-recentf "recent files"))
+
+    (defhydra hydra-zoom (global-map "<f2>")
+      "zoom"
+
+      ("i" text-scale-increase "in")
+      ("o" text-scale-decrease "out")))
+
+  (use-package hydra
+    :config (mro-config-hydra))
+
+  #+END_SRC
+
+* sonstiges  
+  spaceline - [[https://github.com/TheBB/spaceline][Powerline theme from Spacemacs]]
+  #+BEGIN_SRC emacs-lisp
+  (defun mro-config-spaceline ()
+    (setq spaceline-highlight-face-func 'spaceline-highlight-face-evil-state)
+    (spaceline-spacemacs-theme))
+
+  (use-package spaceline
+    :ensure t
+    :config (mro-config-spaceline))
+
+  #+END_SRC
+
+  dashboard
+
+  [[https://github.com/emacs-dashboard/emacs-dashboard/][An extensible emacs dashboard]]
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package dashboard
+    :ensure t
+    :config (dashboard-setup-startup-hook))
+  #+END_SRC
+
+
+  verfolgung der häufigkeit verwendeter emacs-befehle; anzeige mittels *keyfreq-show*
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package keyfreq
+    :ensure t
+    :config
+      (keyfreq-mode 1)
+      (keyfreq-autosave-mode 1))
+  #+END_SRC
+
+  focus
+  #+BEGIN_SRC emacs-lisp
+  (use-package focus
+    :ensure t
+    :config (add-hook 'prog-mode-hook #'focus-mode))
+  #+END_SRC
+
+  #+BEGIN_SRC emacs-lisp
+  (global-prettify-symbols-mode)
+  #+END_SRC
+* org-mode
+
+  liste aller puffer für org-dateien, für die eine datei existiert
+  #+BEGIN_SRC emacs-lisp
+  (defun currently-visited-org-files ()
+    (seq-remove 'null (mapcar (lambda (buffer) (buffer-file-name buffer))
+                        (org-buffer-list 'files t))))
+  #+END_SRC
+
+  protocol/capture
+  #+BEGIN_SRC emacs-lisp
+  (require 'org-protocol)
+
+  (setq mro-capture-file "~/org/capture.org")
+
+  (setq org-capture-templates '(
+    ("p" "Protocol" entry (file+headline mro-capture-file "zu verorten")
+    "* %^{Title}\nQuelle: %u, %a\n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n%?")
+
+    ("L" "Protocol Link" entry (file+headline mro-capture-file "zu verorten")
+    "* %? [[%:link][%:description]] \nErfasst am: %U")))
+    
+  #+END_SRC
+
+  #+BEGIN_SRC emacs-lisp
+  (defun mro-config-org ()
+
+    (setq org-refile-allow-creating-parent-nodes "confirm"
+      org-refile-use-outline-path "file"
+
+      ;; erledigte items nicht in agenda view anzeigen
+      org-agenda-skip-scheduled-if-done t)
+
+    (setq org-refile-targets '(
+      (currently-visited-org-files :maxlevel . 3))))
+
+  (use-package org
+    :config (mro-config-org))
+
+  #+END_SRC
+
+**  [[https://orgmode.org/worg/org-contrib/org-protocol.html][org-protocol.el – Intercept calls from emacsclient to trigger custom actions]] 
+Erfasst am: [2019-07-05 Fr 15:34]
+
+* REST/APIs
+
+  [[https://github.com/pashky/restclient.el][HTTP REST client tool for emacs]]
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package restclient
+    :ensure t
+    :defer t)
+
+  (use-package company-restclient
+    :after restclient
+    :config (add-to-list 'company-backends 'company-restclient))
+  #+END_SRC
+
+* vervollständigung
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package company
+    :config (add-hook 'prog-mode-hook #'company-mode))
+  #+END_SRC
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package company-lsp
+    :disabled  ;; TODO installation fehlgeschlagen
+    :ensure t
+    :config (push 'company-lsp companybackends)
+    :after company)
+  #+END_SRC
+
+* lisp
+
+  [[https://github.com/abo-abo/lispy/][Short and sweet LISP editing]]
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package lispy
+    :ensure t
+    :config (add-hook 'emacs-lisp-mode-hook (lambda () (lispy-mode 1))))
+  #+END_SRC
+
+**  [[http://oremacs.com/lispy/][lispy.el function reference]] 
+ Erfasst am: [2019-07-05 Fr 16:12]
+
+* hervorhebung
+
+  #+BEGIN_SRC emacs-lisp
+  (global-hl-line-mode)
+  #+END_SRC
+
+* clojure
+  yasnippet snippets
+  #+BEGIN_SRC emacs-lisp
+  (use-package clojure-snippets
+    :ensure t
+    :after yasnippet)
+  #+END_SRC
+
+* flycheck
+  [[https://github.com/flycheck/flycheck][On the fly syntax checking for GNU Emacs]]
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package flycheck
+    :ensure t)
+  #+END_SRC
