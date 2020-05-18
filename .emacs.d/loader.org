@@ -9,7 +9,11 @@
   (unless (server-running-p) (server-start))
   #+END_SRC
 
-* pakete
+
+* packages
+  #+BEGIN_SRC emacs-lisp
+  (push "~/.emacs.d/misc" load-path)  
+  #+END_SRC
 
   #+BEGIN_SRC emacs-lisp
   (require 'package)
@@ -44,14 +48,14 @@
   #+END_SRC
   
 
-* farb-thema
+* color theme
 
   lieblingsliste: leuven,, monokai, solarized
 
   #+BEGIN_SRC emacs-lisp
   (use-package solarized-theme
     :ensure t
-    :config (load-theme 'solarized-dark t))
+    :config (load-theme 'solarized-light t))
   #+END_SRC
 
 * evil
@@ -59,7 +63,11 @@
   #+BEGIN_SRC emacs-lisp
   (use-package evil 
     :ensure t
-    :config (evil-mode))
+;    :init (setq evil-disable-insert-state-binding t)
+    :config (progn 
+      (evil-mode)
+      (setq evil-default-state 'emacs)
+))
   #+END_SRC
 
   evil-commentary https://github.com/linktohack/evil-commentary
@@ -84,6 +92,8 @@
   (use-package counsel
     :ensure t)
 
+  [[https://github.com/abo-abo/swiper][Ivy - a generic completion frontend for Emacs, Swiper - isearch with an overview, and more. Oh, man!]]
+
   (use-package swiper
     :ensure t
     :diminish ivy-mode
@@ -101,13 +111,6 @@
   
   link-navigation
 
-  #+BEGIN_SRC emacs-lisp
-  (use-package ace-link
-    :ensure t
-    :config (ace-link-setup-default)
-    :config (define-key org-mode-map (kbd "M-o") 'ace-link-org))
-  #+END_SRC
-  
   navigation nach präfix - [[https://github.com/abo-abo/avy][avy - Jump to things in Emacs tree-style]]
 
   #+BEGIN_SRC emacs-lisp
@@ -115,38 +118,68 @@
     :config (global-set-key (kbd "C-:") 'avy-goto-char))
   #+END_SRC
 
-* tastenbelegung
-
-  [[https://github.com/justbur/emacs-which-key][which-key - Emacs package that displays available keybindings in popup]]
+**  [[https://github.com/abo-abo/ace-link][abo-abo/ace-link: Quickly follow links in Emacs]]
+   Erfasst: [2020-05-16 Sat 18:53]
 
   #+BEGIN_SRC emacs-lisp
-  (use-package which-key
+  (use-package ace-link
     :ensure t
-    :config (which-key-mode))
+    :config (ace-link-setup-default)
+    :config (define-key org-mode-map (kbd "M-o") 'ace-link-org))
+  #+END_SRC
+  
+* verschiedenes
+
+**  zeilen umbrechen
+
+  #+BEGIN_SRC emacs-lisp
+  (global-visual-line-mode)
 
   #+END_SRC
 
-* verschiedenes
+**  anzeige von zeilennummern in allen puffern
 
-  keine scrollbalken und keine werkzeugleiste anzeigen
+  #+BEGIN_SRC emacs-lisp
+  (global-display-line-numbers-mode)
+  #+END_SRC
+
+*** siehe auch:  [[http://ergoemacs.org/emacs/emacs_line_number_mode.html][Emacs: Show Line Numbers]] 
+  Erfasst am: [2020-05-09 Sat 15:26]
+
+**  keine scrollbalken und keine werkzeugleiste anzeigen
   #+BEGIN_SRC emacs-lisp
   (scroll-bar-mode -1)
   (tool-bar-mode -1)
   #+END_SRC
 
-  bei nachfragen y/n statt yes/no
+**  bei nachfragen y/n statt yes/no
 
   #+BEGIN_SRC emacs-lisp
   (fset 'yes-or-no-p 'y-or-n-p)
   #+END_SRC
 
 
-  Bookmarks
+**  Bookmarks
 
   #+BEGIN_SRC emacs-lisp
   (use-package bm
     :ensure t)
   #+END_SRC
+
+** ensure that commands found by shell are also found by emacs
+
+   #+BEGIN_SRC emacs-lisp
+   (use-package exec-path-from-shell
+     :ensure t
+     :if (memq window-system '(mac ns x))
+     :config (exec-path-from-shell-initialize))
+   #+END_SRC
+
+** have selection deleted by entered text
+
+   #+BEGIN_SRC emacs-lisp
+   (delete-selection-mode)
+   #+END_SRC
 
 * SCM: git, etc.
 
@@ -173,6 +206,16 @@
     :disabled
     :config (global-set-key (kbd "C-x f") 'find-file-in-repository))
   #+END_SRC
+
+**  [[https://github.com/emacsorphanage/git-messenger][GitHub - emacsorphanage/git-messenger: Emacs Port of git-messenger.vim]] 
+ Erfasst am: [2020-05-10 Sun 23:11]
+
+ git-messenger.el provides function that popup commit message at current line. This is useful when you want to know why this line was changed.
+
+ #+BEGIN_SRC emacs-lisp
+ (use-package git-messenger
+   :ensure t)
+ #+END_SRC
 
 * yasnippet
 
@@ -225,9 +268,10 @@
     :bind ("<f12>" . deft)
     :commands deft
     :config
-      (setq deft-directory "~/org-alle"
+      (setq deft-directory "~/org-dateien"
         deft-use-filename-as-title nil
         deft-use-filter-string-for-filename t
+	deft-default-extension "org"
 
         ;; automatisch generierten titel in org-mode-dateien mit #+TITLE: versehen
         deft-org-mode-title-prefix t
@@ -239,45 +283,6 @@
         deft-recursive t
 
         deft-auto-save-interval 30))
-
-  #+END_SRC
-* hydra
-
-  [[https://github.com/abo-abo/hydra][make Emacs bindings that stick around]]
-
-  #+BEGIN_SRC emacs-lisp
-  (defun mro-config-hydra ()
-    (defhydra hydra-win (global-map "<apps> w")
-      "win"
-
-      ("a" window-maximize "max")
-      ("q" quit-window "quit"))
-
-    (defhydra hydra-buf (global-map "<apps> b")
-      "buffer"
-
-      ("d" evil-delete-buffer "evil-delete")
-      ("b" ivy-switch-buffer "switch buffer"))
-
-    (defhydra hydra-jump (global-map "<apps> j")
-      "jump"
-
-      ("i" counsel-imenu "imenu"))
-
-    (defhydra hydra-file (global-map "<apps> f")
-      "file"
-
-      ("f" counsel-find-file "find-file")
-      ("r" counsel-recentf "recent files"))
-
-    (defhydra hydra-zoom (global-map "<f2>")
-      "zoom"
-
-      ("i" text-scale-increase "in")
-      ("o" text-scale-decrease "out")))
-
-  (use-package hydra
-    :config (mro-config-hydra))
 
   #+END_SRC
 
@@ -317,57 +322,140 @@
 
   focus
   #+BEGIN_SRC emacs-lisp
-  (use-package focus
-    :ensure t
-    :config (add-hook 'prog-mode-hook #'focus-mode))
+;  (use-package focus
+;    :ensure t
+;    :config (add-hook 'prog-mode-hook #'focus-mode))
   #+END_SRC
 
   #+BEGIN_SRC emacs-lisp
   (global-prettify-symbols-mode)
   #+END_SRC
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package diminish
+    :ensure t)
+  #+END_SRC
 * org-mode
 
-  liste aller puffer für org-dateien, für die eine datei existiert
+**  protocol/capture
+  determine list of all org buffers that have a file
+
   #+BEGIN_SRC emacs-lisp
   (defun currently-visited-org-files ()
     (seq-remove 'null (mapcar (lambda (buffer) (buffer-file-name buffer))
                         (org-buffer-list 'files t))))
   #+END_SRC
 
-  protocol/capture
   #+BEGIN_SRC emacs-lisp
   (require 'org-protocol)
 
-  (setq mro-capture-file "~/org/capture.org")
+  (setq mro-capture-file "~/org-dateien/capture.org")
 
   (setq org-capture-templates '(
     ("p" "Protocol" entry (file+headline mro-capture-file "zu verorten")
     "* %^{Title}\nQuelle: %u, %a\n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n%?")
 
+    ("s" "sichtliste" entry (file+headline "~/org-dateien/agenda/sichtliste.org" "zu verorten")
+      "* %? [[%:link][%:description]]\n%U")
+
     ("L" "Protocol Link" entry (file+headline mro-capture-file "zu verorten")
-    "* %? [[%:link][%:description]] \nErfasst am: %U")))
+    "* %? [[%:link][%:description]]\n  Erfasst: %U")))
     
   #+END_SRC
 
   #+BEGIN_SRC emacs-lisp
   (defun mro-config-org ()
 
-    (setq org-refile-allow-creating-parent-nodes "confirm"
-      org-refile-use-outline-path "file"
+    (setq
+      org-agenda-files '("~/org-dateien/agenda/")
+
+      org-refile-allow-creating-parent-nodes 'confirm
+      org-refile-use-outline-path t
 
       ;; erledigte items nicht in agenda view anzeigen
-      org-agenda-skip-scheduled-if-done t)
+      org-agenda-skip-scheduled-if-done t
 
-    (setq org-refile-targets '(
-      (currently-visited-org-files :maxlevel . 3))))
+      ;; namen für ziel aus dateiname und überschrift ableiten
+      org-refile-use-outline-path 'file
+
+      ;; notwending für abgeleitete namen in zielauswahl
+      org-outline-path-complete-in-steps nil
+
+      org-refile-allow-creating-parent-node 'confirm)
+
+    ;; alle überschriften bis level 3 in momentan besuchten org-dateien können ziel sein
+    (setq org-refile-targets '((currently-visited-org-files :maxlevel . 3))))
 
   (use-package org
     :config (mro-config-org))
-
   #+END_SRC
 
 **  [[https://orgmode.org/worg/org-contrib/org-protocol.html][org-protocol.el – Intercept calls from emacsclient to trigger custom actions]] 
 Erfasst am: [2019-07-05 Fr 15:34]
+
+
+
+**  [[https://github.com/sabof/org-bullets][GitHub - sabof/org-bullets: utf-8 bullets for org-mode]] 
+ Erfasst am: [2020-05-04 Mon 18:03]
+
+ #+BEGIN_SRC emacs-lisp
+ (use-package org-bullets
+   :ensure t
+   :requires org
+   :config (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+ #+END_SRC
+
+
+** use syntax highlighting by minted for latex exports
+
+   requires pygments to be installed
+
+   #+BEGIN_SRC emacs-lisp
+   (require 'ox-latex)
+   (add-to-list 'org-latex-packages-alist '("" "minted"))
+   (setq org-latex-listings 'minted)
+
+   (setq org-latex-pdf-process
+   '("%latex -shell-escape -interaction nonstopmode -output-directory %o %f"
+    "%latex -shell-escape -interaction nonstopmode -output-directory %o   %f"
+    "%latex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+   #+END_SRC
+
+
+** org-ql
+   [[https://github.com/alphapapa/org-ql][An Org-mode query language, including search commands and saved views]]
+
+   #+BEGIN_SRC emacs-lisp
+ ;    (use-package org-ql
+ ;    :quelpa (org-ql :fetcher github :repo "alphapapa/org-ql"))  
+   #+END_SRC
+
+
+** org <-> nextcloud sync
+
+***  [[https://github.com/dengste/org-caldav][GitHub - dengste/org-caldav: Caldav sync for Emacs orgmode]] 
+  Erfasst am: [2020-05-05 Tue 17:18]
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package org-caldav
+    :ensure t
+    :config 
+      (setq 
+	org-caldav-url "https://rolappe.it/nextcloud/remote.php/dav/calendars/mrolappe"
+	org-caldav-calendar-id "org-caldav-test-cal"
+	org-caldav-inbox "~/org-dateien/agenda/org-caldav-sync.org"
+	org-icalendar-timezone "Europe/Berlin"))
+  #+END_SRC
+
+
+**  [[https://github.com/abo-abo/org-download][abo-abo/org-download: Drag and drop images to Emacs org-mode]]
+   Erfasst: [2020-05-14 Thu 18:26]
+
+   #+BEGIN_SRC emacs-lisp
+   (use-package org-download
+     :ensure t
+     :hook (dired-mode . org-download-enable))
+   #+END_SRC
 
 * REST/APIs
 
@@ -387,6 +475,7 @@ Erfasst am: [2019-07-05 Fr 15:34]
 
   #+BEGIN_SRC emacs-lisp
   (use-package company
+    :ensure t
     :config (add-hook 'prog-mode-hook #'company-mode))
   #+END_SRC
 
@@ -398,18 +487,74 @@ Erfasst am: [2019-07-05 Fr 15:34]
     :after company)
   #+END_SRC
 
-* lisp
 
-  [[https://github.com/abo-abo/lispy/][Short and sweet LISP editing]]
+* sprachen
 
+  LSP client, benötigt von rustic, eglot-fsharp
   #+BEGIN_SRC emacs-lisp
-  (use-package lispy
-    :ensure t
-    :config (add-hook 'emacs-lisp-mode-hook (lambda () (lispy-mode 1))))
+   (use-package eglot
+     :defer t
+     :ensure t)  
   #+END_SRC
 
-**  [[http://oremacs.com/lispy/][lispy.el function reference]] 
- Erfasst am: [2019-07-05 Fr 16:12]
+** flycheck
+   [[https://github.com/flycheck/flycheck][On the fly syntax checking for GNU Emacs]]
+
+   #+BEGIN_SRC emacs-lisp
+   (use-package flycheck
+     :ensure t)
+   #+END_SRC
+
+** rust
+
+***  [[https://github.com/brotzeit/rustic][brotzeit/rustic: Rust development environment for Emacs]] 
+  Erfasst am: [2020-05-05 Tue 18:41]
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package rustic
+    :ensure t
+    :defer t)
+  #+END_SRC
+
+** F#
+
+   #+BEGIN_SRC emacs-lisp
+
+   (use-package fsharp-mode
+     :defer t
+     :ensure t)
+
+   (require 'eglot-fsharp)
+
+   #+END_SRC
+** lisp
+
+   [[https://github.com/abo-abo/lispy/][Short and sweet LISP editing]]
+
+   #+BEGIN_SRC emacs-lisp
+   (use-package lispy
+     :ensure t
+     :config (add-hook 'emacs-lisp-mode-hook (lambda () (lispy-mode 1))))
+   #+END_SRC
+
+***  [[http://oremacs.com/lispy/][lispy.el function reference]] 
+  Erfasst am: [2019-07-05 Fr 16:12]
+
+
+** scheme
+
+   #+BEGIN_SRC emacs-lisp
+   (use-package geiser
+     :ensure t)
+   #+END_SRC
+
+** clojure
+   yasnippet snippets
+   #+BEGIN_SRC emacs-lisp
+   (use-package clojure-snippets
+     :ensure t
+     :after yasnippet)
+   #+END_SRC
 
 * hervorhebung
 
@@ -417,18 +562,265 @@ Erfasst am: [2019-07-05 Fr 15:34]
   (global-hl-line-mode)
   #+END_SRC
 
-* clojure
-  yasnippet snippets
+**  [[https://github.com/gonewest818/dimmer.el][gonewest818/dimmer.el: Interactively highlight which buffer is active by dimming the others.]]
+   Erfasst: [2020-05-16 Sat 15:59]
+
+   #+BEGIN_SRC emacs-lisp
+   (use-package dimmer
+     :ensure t
+     :config
+       (setq dimmmer-adjustmen-mode :both)  ;; adjust both foreground and background color
+       ;; prevent dimming of certain buffers
+       (dimmer-configure-hydra)
+       (dimmer-configure-magit)
+       (dimmer-configure-org)
+       (dimmer-configure-which-key)
+       )
+   #+END_SRC
+* PDF
+
   #+BEGIN_SRC emacs-lisp
-  (use-package clojure-snippets
+  (use-package org-pdftools
+    :hook (org-load . org-pdftools-setup-link))
+  #+END_SRC
+
+* quelpa
+
+** quelpa
+ Quelle: [2020-04-30 Thu], [[https://github.com/quelpa/quelpa][quelpa/quelpa: Build and install your Emacs Lisp packages on-the-fly directly from source]]
+  #+BEGIN_QUOTE
+  Build and install your Emacs Lisp packages on-the-fly directly from source 
+ #+END_QUOTE
+
+  #+BEGIN_SRC emacs-lisp
+  ; (use-package quelpa
+  ;  :ensure t)
+
+;    (quelpa
+;    '(quelpa-use-package
+;    :fetcher git
+;    :url "https://github.com/quelpa/quelpa-use-package.git"))
+;    (require 'quelpa-use-package)
+
+  #+END_SRC
+
+* beacon
+  [[https://github.com/Malabarba/beacon][A light that follows your cursor around so you don't lose it! ]]
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package beacon
     :ensure t
-    :after yasnippet)
+    :diminish beacon-mode
+    :config (beacon-mode 1))
   #+END_SRC
 
-* flycheck
-  [[https://github.com/flycheck/flycheck][On the fly syntax checking for GNU Emacs]]
+
+* icons
+
+**  [[https://github.com/domtronn/all-the-icons.el][domtronn/all-the-icons.el: A utility package to collect various Icon Fonts and propertize them within Emacs.]] 
+ Erfasst am: [2020-05-02 Sat 02:33]
+
+ #+BEGIN_SRC emacs-lisp
+ (use-package all-the-icons
+   :ensure t)
+ #+END_SRC
+
+**  [[https://github.com/jtbm37/all-the-icons-dired][jtbm37/all-the-icons-dired: Adds dired support to all-the-icons]] 
+ Erfasst am: [2020-05-02 Sat 02:48]
+
+ #+BEGIN_SRC emacs-lisp
+ (use-package all-the-icons-dired
+   :ensure t
+   :config (add-hook 'dired-mode-hook 'all-the-icons-dired-mode))
+ #+END_SRC
+**  [[https://github.com/asok/all-the-icons-ivy][asok/all-the-icons-ivy: all-the-icons.el for Ivy/Counsel]] 
+ Erfasst am: [2020-05-02 Sat 02:55]
+
+ #+BEGIN_SRC emacs-lisp
+ (use-package all-the-icons-ivy
+   :ensure t
+   :init (add-hook 'after-init-hook 'all-the-icons-ivy-setup))
+ #+END_SRC
+
+* elfeed
+
+**  [[https://github.com/skeeto/elfeed][GitHub - skeeto/elfeed: An Emacs web feeds client]]       :elfeed:rss:feed:
+ Erfasst am: [2020-05-04 Mon 13:29]
+
+ #+BEGIN_SRC emacs-lisp
+ (use-package elfeed
+   :ensure t
+   :config
+     (setq elfeed-feeds '(
+       "https://thorstenball.com/atom.xml"
+     )))
+ #+END_SRC
+
+**  [[https://github.com/remyhonig/elfeed-org][GitHub - remyhonig/elfeed-org: Configure the Elfeed RSS reader with an Orgmode file]] :elfeed:rss:org_mode:
+ Erfasst am: [2020-05-04 Mon 14:32]
+
+ #+BEGIN_SRC emacs-lisp
+ (use-package elfeed-org
+   :ensure t
+   :requires elfeed
+   :config
+     (elfeed-org)
+     (setq rmh-elfeed-org-files '("~/.emacs.d/elfeed.org")))
+ #+END_SRC
+
+**  [[https://github.com/algernon/elfeed-goodies][GitHub - algernon/elfeed-goodies: Various goodies for Elfeed]] 
+ Erfasst am: [2020-05-04 Mon 14:58]
+
+ #+BEGIN_SRC emacs-lisp
+ (use-package elfeed-goodies
+   :ensure t
+   :requires elfeed
+   :config (elfeed-goodies/setup)) 
+ #+END_SRC
+
+* ripgrep
+
+**  [[https://github.com/dajva/rg.el][GitHub - dajva/rg.el: Emacs search tool based on ripgrep]] 
+ Erfasst am: [2020-05-05 Tue 17:10]
+
+ #+BEGIN_SRC emacs-lisp
+ (use-package rg
+   :ensure t
+   :config (rg-enable-menu))
+
+ #+END_SRC
+
+* verschiedenes
+
+* tastenbelegung
+
+** hydra
+  
+   [[https://github.com/abo-abo/hydra][make Emacs bindings that stick around]]
+
+   #+BEGIN_SRC emacs-lisp
+   (if (string-equal system-type "darwin")
+     (define-key key-translation-map (kbd "C-p") (kbd "<menu>"))) ; Mac OS X don't do menu/app
+
+   (defun mro-config-hydra ()
+     (defhydra hydra-win ()
+       "win"
+
+       ("h" windmove-left "left")
+       ("j" windmove-down "down")
+       ("k" windmove-up "up")
+       ("l" windmove-right "right")
+
+       ("v" split-window-vertically "split v")
+       ("s" split-window-horizontally "split h")
+
+       ("x" maximize-window "max")
+       ("d" delete-window "delete"))
+
+     (global-set-key (kbd "<f16> w") 'hydra-win/body)
+
+
+     (defhydra hydra-move ()
+       "vi/movement"
+
+       ("0" beginning-of-line)
+       ("$" end-of-line)
+       ("i" previous-line)
+       ("k" next-line)
+       ("j" backward-char)
+       ("l" forward-char)
+       ("q" nil "quit"))
+
+     (global-set-key (kbd "<f16> v") 'hydra-move/body)
+
+     (defhydra hydra-apps ()
+       "apps"
+
+       ("oa" org-agenda-list "org agenda list")
+       ("oc" org-capture "org capture")
+       ("ol" org-store-link "org store link")
+       ("om" org-tags-view "org tags view")
+       ("oo" org-agenda "org agenda")
+       ("ot" org-todo-list "org todo list")
+       ("os" org-search-view "org search view")
+       ("f" elfeed "elfeed" :exit t))
+
+     (global-set-key (kbd "<f16> a") 'hydra-apps/body)
+
+     (defhydra hydra-elfeed (elfeed-search-mode-map "<f17>")
+       ("r" foo-bar "foo-bar"))
+
+     (defhydra hydra-buf ()
+       "buffer"
+
+       ("d" evil-delete-buffer "evil-delete")
+       ("b" ivy-switch-buffer "switch buffer")
+       ("n" next-buffer "next")
+       ("p" previous-buffer "previous"))
+
+     (global-set-key (kbd "<f16> b") 'hydra-buf/body)
+
+
+     (defhydra hydra-jump ()
+       "jump"
+
+       ("i" counsel-imenu "imenu"))
+
+     (global-set-key (kbd "<f16> j") 'hydra-jump/body)
+
+
+     (defhydra hydra-file ()
+       "file"
+
+       ("f" counsel-find-file "find-file")
+       ("r" counsel-recentf "recent files"))
+
+     (global-set-key (kbd "<f16> f") 'hydra-file/body)
+
+     (defhydra hydra-zoom (global-map "<f2>")
+       "zoom"
+
+       ("i" text-scale-increase "in")
+       ("o" text-scale-decrease "out"))
+
+     (defhydra hydra-git ()
+       "(ma)git"
+
+       ("s" magit-status "magit status")
+       ("m" magit-dispatch "magit dispatch" :exit t)
+       ("M" git-messenger:popup-message "last commit message of current line")
+       ("S" magit-stage-file "stage current file")
+       ("U" magit-unstage-file "unstage current file")
+     )
+
+     (global-set-key (kbd "<f16> g") 'hydra-git/body)
+ )
+
+
+   (use-package hydra
+     :config (mro-config-hydra))
+
+   #+END_SRC
+
+**  [[https://github.com/justbur/emacs-which-key][which-key - Emacs package that displays available keybindings in popup]]
 
   #+BEGIN_SRC emacs-lisp
-  (use-package flycheck
-    :ensure t)
+  (use-package which-key
+    :ensure t
+    :diminish which-key-mode
+    :config (which-key-mode))
+
   #+END_SRC
+
+
+**  [[https://github.com/noctuid/general.el][GitHub - noctuid/general.el: More convenient key definitions in emacs]] 
+ Erfasst am: [2020-05-04 Mon 13:20]
+
+  #+BEGIN_SRC emacs-lisp
+  (use-package general
+    :ensure t
+;    :config
+;      (general-define-key q)
+)
+  #+END_SRC
+
