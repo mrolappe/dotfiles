@@ -10,6 +10,8 @@ import XMonad.Layout.Tabbed
 import XMonad.Layout.NoBorders (noBorders, smartBorders)
 import XMonad.Layout.Spacing
 import XMonad.Layout.TwoPane
+-- import XMonad.Layout.Fullscreen
+import XMonad.Layout.ShowWName
 
 -- import           XMonad.Config.Kde
 import XMonad.Hooks.DynamicLog (dynamicLogString, dynamicLogWithPP, xmobarPP, PP(..))
@@ -38,7 +40,7 @@ import XMonad.Util.Themes
 myManageHook = composeAll
   [ className =? "plasmashell"  --> doFloat
   , className =? "Firefox" <&&> resource =? "Toolkit" --> doFloat
-  , className =? "KeePassXC" --> doShift "9"
+--  , className =? "KeePassXC" --> doShift "9"
   , className =? "Emacs" --> doShift "3:emacs"
   , className =? "jetbrains-toolbox" --> doFloat
   , className =? "jetbrains-clion" --> doFloat
@@ -60,7 +62,7 @@ myStartupHook = do
 --  spawnOnce "nm-applet &"
   spawnOnce "~/.local/share/JetBrains/Toolbox/bin/jetbrains-toolbox --minimize &"
   spawnOnce "/usr/bin/nextcloud &"
-  spawnOnce "/usr/bin/keepassxc &"
+--  spawnOnce "/usr/bin/keepassxc &"
   spawnOnce "emacs &"
   spawnOnce "firefox &"
 
@@ -80,9 +82,9 @@ myBlaScratchPadHook = scratchpadManageHook (W.RationalRect l t w h)
     l = 1 - w
 
 myLayouts =
+  smartBorders $
   spacingRaw True (Border 0 0 0 0) False (Border 10 10 10 10) True $
---  smartBorders $
-  tabbed shrinkText (theme kavonChristmasTheme)
+  noBorders (tabbed shrinkText (theme kavonChristmasTheme))
   ||| noBorders Full
   ||| TwoPane (3/100) (1/2)
   ||| Tall 1 (10/100) (60/100)
@@ -91,7 +93,11 @@ myLayouts =
 main = do
   xmproc <- spawnPipe "xmobar -x 0 ~/.xmobarrc"
 
-  xmonad $ docks $ ewmh def
+  xmonad
+--    $ fullscreenSupport
+    $ docks
+    $ ewmh
+    def
          { terminal   = myTerminal
          , handleEventHook = handleEventHook def <+> fullscreenEventHook
          , borderWidth = 2
@@ -107,11 +113,15 @@ main = do
          , logHook = myLogHook <+> workspaceHistoryHook <+> dynamicLogWithPP xmobarPP
          { ppOutput = \x -> hPutStrLn xmproc x
          , ppUrgent = \x -> x ++ "!"
+         , ppHidden = \x -> if x == "NSP" then "" else x
 --         , ppWsSep = "||"
          }
-         , manageHook = namedScratchpadManageHook scratchpads <+> myBlaScratchPadHook <+> myManageHook <+> manageDocks <+> ( isFullscreen --> doFullFloat )
+         , manageHook = manageDocks
+           <+> ( isFullscreen --> doFullFloat )
+           <+> namedScratchpadManageHook scratchpads <+> myManageHook
+--           <+> fullscreenManageHook
 --         , layoutHook = avoidStruts (layoutHook def)
-         , layoutHook = avoidStruts myLayouts
+         , layoutHook = smartBorders . avoidStruts . showWName $ myLayouts
     }
 
 myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
@@ -119,17 +129,13 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
   -- launch terminal
   [ ((modm .|. shiftMask, xK_Return), spawn $ XMonad.terminal conf)
 
-  -- launch dmenu
---  , ((modm, xK_p), spawn "dmenu_run")
   , ((modm, xK_space), spawn "rofi -show combi -modi combi  -show-icons -theme solarized -font 'Cascadia Code 18'")
 
   -- close focused window on current workspace
   , ((modm .|. shiftMask, xK_c), kill1)
 
   -- rotate through available layout algorithms
-  , ((modm, xK_Menu), sendMessage NextLayout
---      >> (dynamicLogString def >>= \d -> spawn $ "/usr/bin/notify-send bla '" ++ d ++ "'")
-    )
+  , ((modm, xK_Menu), sendMessage NextLayout)
 
   -- reset laouts on current workspace to default
   , ((modm .|. shiftMask, xK_space), setLayout $ XMonad.layoutHook conf)
@@ -179,7 +185,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
   -- kill all other copies
 --  , ((modm .|. shiftMask, xK_d), killAllOtherCopies)
 
-  , ((modm, xK_s), scratchpadSpawnActionTerminal "xterm")
+  , ((modm, xK_s), scratchpadSpawnActionTerminal "")
 
   -- Quit xmonad
   , ((modm .|. shiftMask, xK_q     ), io (exitWith ExitSuccess))
@@ -202,7 +208,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 
 --  [ ((controlMask .|. mod1Mask, xK_Return), namedScratchpadAction scratchpads "terminal")
   [ ((controlMask .|. mod1Mask, xK_Return), shellPrompt def)
-  , ((controlMask .|. mod1Mask, xK_space), namedScratchpadAction scratchpads "terminal")
+  , ((controlMask .|. mod1Mask, xK_space), namedScratchpadAction scratchpads "keepassxc")
   ]
 
   ++
@@ -220,6 +226,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 -- see also https://www.youtube.com/watch?v=lQ5NQy_cUdw
 scratchpads :: [NamedScratchpad]
 scratchpads = [ NS "terminal" spawnTerm findTerm manageTerm
+              , NS "keepassxc" spawnKeepassxc findKeepassxc manageKeepassxc
               , NS "emacs-scratch" spawnEmacsScratch findEmacsScratch manageEmacsScratch
               ]
   where
@@ -227,6 +234,10 @@ scratchpads = [ NS "terminal" spawnTerm findTerm manageTerm
     findTerm = resource =? "scratchpad"
     manageTerm = nonFloating
 
+    spawnKeepassxc = "keepassxc"
+    findKeepassxc = className =? "KeePassXC"
+    manageKeepassxc = defaultFloating
+    
     findEmacsScratch = title =? "emacs-scratch"
     spawnEmacsScratch = "emacsclient -a'' -nc -F='(quote (name . \"emacs-scratch\"))'"
 --    spawnEmacsScratch = "top"
