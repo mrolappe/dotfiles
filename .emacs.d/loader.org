@@ -7,6 +7,40 @@
   (unless (server-running-p) (server-start))
   #+END_SRC
   
+* startup time
+
+  #+begin_src emacs-lisp
+    (defun efs/display-startup-time ()
+      (message "Emacs loaded in %s with %d garbage collections."
+	       (format "%.2f seconds"
+		       (float-time (time-subtract after-init-time before-init-time)))
+	       gcs-done))
+
+    (add-hook 'emacs-startup-hook #'efs/display-startup-time)
+  #+end_src
+
+* font
+
+  set default font for frames
+
+  #+begin_src emacs-lisp
+        (set-face-attribute 'default nil :font "Cascadia Code PL" :height 130)
+  #+end_src
+
+  #+begin_src emacs-lisp
+    (defvar rlp/prog-buffer-face-height 1.3)
+
+    (defun rlp/prog-buffer-face ()
+      (interactive)
+      (setq buffer-face-mode-face `(:family "Cascadia Mono" :height ,rlp/prog-buffer-face-height))
+      (buffer-face-mode)
+
+      (set-face-attribute 'line-number nil :height rlp/prog-buffer-face-height)
+    )
+
+    (add-hook 'prog-mode-hook 'rlp/prog-buffer-face)
+  #+end_src
+
 * packages
 
   #+BEGIN_SRC emacs-lisp
@@ -92,7 +126,8 @@
     )
 
   (use-package counsel
-    :ensure t)
+    :ensure t
+    :config (message "counsel geladen"))
 #+END_SRC
 
 * evil
@@ -100,20 +135,11 @@
   #+BEGIN_SRC emacs-lisp
   (use-package evil
     :ensure t
-;    :init (setq evil-disable-insert-state-binding t)
-    :config (progn
-      (evil-mode)
-      (setq evil-default-state 'emacs)
-))
+    :commands evil-mode
+    :config (setq evil-default-state 'emacs))
   #+END_SRC
 
   evil-commentary https://github.com/linktohack/evil-commentary
-
-  #+BEGIN_SRC emacs-lisp
-  (use-package evil-commentary :disabled
-    :ensure t)
-  #+END_SRC
-
 
 * key bindings
 
@@ -122,9 +148,9 @@
   #+BEGIN_SRC emacs-lisp
   (use-package which-key
     :ensure t
+    :defer 3
     :diminish which-key-mode
     :config (which-key-mode))
-
   #+END_SRC
 
 
@@ -159,7 +185,8 @@
 
   #+begin_src emacs-lisp
     (use-package htmlize
-      :ensure t)
+      :ensure t
+      :commands org-export-dispatch)
   #+end_src
 
 * SCM: git, etc.
@@ -169,7 +196,7 @@
   #+BEGIN_SRC emacs-lisp
   (use-package magit
     :ensure t
-    :defer)
+    :commands magit magit-status)
   #+END_SRC
 
   [[https://github.com/ryuslash/git-auto-commit-mode/][git-auto-commit-mode - Emacs minor mode to automatically commit (and push) a git repository.]]
@@ -252,23 +279,22 @@
         deft-use-filter-string-for-filename t
 	deft-default-extension "org"
 
-        ;; automatisch generierten titel in org-mode-dateien mit #+TITLE: versehen
+        ;; add title prefix to automatically generated title tag
         deft-org-mode-title-prefix t
 
-        ;; nach title (dateiname) sortieren
+        ;; sort by title (file name)
         deft-current-sort-method 'title
 
-        ;; auch unterverzeichnisse berücksichtigen
+        ;; consider subdirectories
         deft-recursive t
 
         deft-auto-save-interval 30))
 
   #+END_SRC
 
-
-
 * sonstiges  
   spaceline - [[https://github.com/TheBB/spaceline][Powerline theme from Spacemacs]]
+
   #+BEGIN_SRC emacs-lisp
   (defun rlp/config-spaceline ()
     (setq spaceline-highlight-face-func 'spaceline-highlight-face-evil-state)
@@ -305,13 +331,6 @@
       (keyfreq-autosave-mode 1))
   #+END_SRC
 
-  focus
-  #+BEGIN_SRC emacs-lisp
-;  (use-package focus
-;    :ensure t
-;    :config (add-hook 'prog-mode-hook #'focus-mode))
-  #+END_SRC
-
   #+BEGIN_SRC emacs-lisp
   (global-prettify-symbols-mode)
   #+END_SRC
@@ -337,8 +356,9 @@
   #+begin_src emacs-lisp
     (use-package org-bullets
       :ensure t
-      :config (add-hook 'org-mode-hook #'org-bullets-mode))
+      :hook (org-mode . org-bullets-mode))
   #+end_src
+
   make org-mode links to mp4 files open in VLC
 
   #+begin_src emacs-lisp
@@ -381,18 +401,20 @@
       org-refile-allow-creating-parent-nodes 'confirm
       org-refile-use-outline-path t
 
-      ;; erledigte items nicht in agenda view anzeigen
+      org-agenda-include-diary t
+
+      ;; do not show done items
       org-agenda-skip-scheduled-if-done t
 
-      ;; namen für ziel aus dateiname und überschrift ableiten
+      ;; derive target name from file name and headline
       org-refile-use-outline-path 'file
 
-      ;; notwending für abgeleitete namen in zielauswahl
+      ;; necessary for derived names in target path
       org-outline-path-complete-in-steps nil
 
       org-refile-allow-creating-parent-node 'confirm)
 
-    ;; alle überschriften bis level 3 in momentan besuchten org-dateien können ziel sein
+    ;; all headlines up to and including level 3 in currently visited org files can be refile targets
     (setq org-refile-targets '((currently-visited-org-files :maxlevel . 3))))
 
   (use-package org
@@ -400,10 +422,6 @@
   #+END_SRC
 
   [[https://github.com/alphapapa/org-super-agenda][Supercharge your Org daily/weekly agenda by grouping items]]
-
-  #+begin_src emacs-lisp
-  ;; TODO
-  #+end_src
 
 
 **  [[https://github.com/alphapapa/org-ql][alphapapa/org-ql: An Org-mode query language, including search commands and saved views]]
@@ -425,6 +443,7 @@
    #+BEGIN_SRC emacs-lisp
    (use-package exec-path-from-shell
      :ensure t
+     :defer 2
      :if (memq window-system '(mac ns x))
      :config (exec-path-from-shell-initialize))
    #+END_SRC
@@ -468,6 +487,16 @@
 
   [[https://github.com/lordpretzel/mu4e-views][mu4e-views]] facilitates choosing how to view e-mails, e.g. view as html using an xwidgets window.
 
+ add some bookmarks
+
+   #+begin_src emacs-lisp
+   (defun rlp/add-mu4e-bookmarks ()
+     (add-to-list 'mu4e-bookmarks
+		  '(:name "Kotlin Weekly"
+		    :query "from:mailinglist@kotlinweekly.net"
+		    :key ?k)))
+   #+end_src
+
   #+begin_src emacs-lisp
     (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
 
@@ -477,6 +506,7 @@
     )
 
 
+    (defun rlp/configure-mu4e ()
     (setq mail-user-agent 'mu4e-user-agent
 	  message-send-mail-function 'smtpmail-send-it
 
@@ -490,11 +520,17 @@
 	  smtpmail-stream-type 'starttls
 	  message-kill-buffer-on-exit t)
 
+	  (rlp/add-mu4e-bookmarks))
 
-    (require 'mu4e)
+    (use-package mu4e
+      :config (rlp/configure-mu4e))
+
+    ;; support for org links to mails
+    (use-package org-mu4e)
 
     (use-package mu4e-alert
       :ensure t
+      :after mu4e
       :init
 	(add-hook 'after-init-hook #'mu4e-alert-enable-notifications)
 	(add-hook 'after-init-hook #'mu4e-alert-enable-mode-line-display))
@@ -504,11 +540,11 @@
 
   #+begin_src emacs-lisp
     (setq mu4e-maildir-shortcuts
-	  '((:maildir "/m_rolappe@web.de/inbox" :key ?i)
-	    (:maildir "/m_rolappe@web.de/archives" :key ?a)
-	    (:maildir "/m_rolappe@web.de/unbekannt" :key ?u)
-	    (:maildir "/m_rolappe@web.de/junk" :key ?j)
-	    (:maildir "/m_rolappe@web.de/sent" :key ?s)))
+	  '((:maildir "/m_rolappe@web.de/INBOX" :key ?i)
+	    (:maildir "/m_rolappe@web.de/Archives" :key ?a)
+	    (:maildir "/m_rolappe@web.de/Unbekannt" :key ?u)
+	    (:maildir "/m_rolappe@web.de/Junk" :key ?j)
+	    (:maildir "/m_rolappe@web.de/Sent" :key ?s)))
   #+end_src
 
   compose messages in a new frame
@@ -533,18 +569,11 @@
       (mu4e-views-mu4e-use-view-msg-method "html"))
   #+end_src
 
- add some bookmarks
-
-   #+begin_src emacs-lisp
-     (add-to-list 'mu4e-bookmarks
-		  '(:name "Kotlin Weekly"
-		    :query "from:mailinglist@kotlinweekly.net"
-		    :key ?k))
-   #+end_src
 * anki
 
   #+begin_src emacs-lisp
   (use-package anki-editor
+    :disabled
     :ensure t)
   #+end_src
 
@@ -562,6 +591,7 @@
 
  #+BEGIN_SRC emacs-lisp
  (use-package elfeed
+   :commands elfeed
    :ensure t)
  #+END_SRC
 
@@ -570,7 +600,7 @@
  #+BEGIN_SRC emacs-lisp
    (use-package elfeed-org
      :ensure t
-     :requires elfeed
+     :after elfeed
      :config
        (elfeed-org)
        (setq rlp/elfeed-org-file (expand-file-name "elfeed.org" rlp/org-files-dir))
@@ -594,6 +624,7 @@
   #+begin_src emacs-lisp
     (use-package company-quickhelp
       :ensure t
+      :after company
       :config (company-quickhelp-mode))
   #+end_src
 
@@ -666,7 +697,8 @@
 
   #+begin_src emacs-lisp
   (use-package vterm
-    :ensure t)
+    :ensure t
+    :commands vterm)
   #+end_src
 
 ** eshell
@@ -674,6 +706,7 @@
    #+begin_src emacs-lisp
    (use-package eshell-git-prompt
      :ensure t
+     :commands eshell
      :config (eshell-git-prompt-use-theme 'powerline))
    #+end_src
 
@@ -686,41 +719,19 @@
   (use-package yasnippet
     :ensure t
     :diminish yas
-    :config
-      (yas-reload-all)
-      (add-hook 'prog-mode-hook #'yas-minor-mode))
+    :hook (prog-mode . yas-minor-mode))
   #+END_SRC
 
   [[https://github.com/AndreaCrotti/yasnippet-snippets][a collection of yasnippet snippets for many languages]]
 
   #+begin_src emacs-lisp
     (use-package yasnippet-snippets
-      :ensure t)
+      :defer 2
+      :requires yasnippet
+      :ensure t
+      :config      (yas-reload-all))
   #+end_src
 
-* font
-
-  set default font for frames
-
-  #+begin_src emacs-lisp
-        (set-face-attribute 'default nil :font "Cascadia Code PL" :height 130)
-;;    (add-to-list 'default-frame-alist
-;;		 '(font . "DejaVu Sans Regular-12"))
-  #+end_src
-
-  #+begin_src emacs-lisp
-    (defvar rlp/prog-buffer-face-height 1.3)
-
-    (defun rlp/prog-buffer-face ()
-      (interactive)
-      (setq buffer-face-mode-face `(:family "Cascadia Mono" :height ,rlp/prog-buffer-face-height))
-      (buffer-face-mode)
-
-      (set-face-attribute 'line-number nil :height rlp/prog-buffer-face-height)
-    )
-
-    (add-hook 'prog-mode-hook 'rlp/prog-buffer-face)
-  #+end_src
 
 * whitespace visualization
 
@@ -753,7 +764,8 @@
 
   #+begin_src emacs-lisp
     (use-package ivy-rich
-      :requires ivy
+      :after ivy
+      :hook (ivy-mode . ivy-rich-mode)
       :ensure t
       :config (ivy-rich-mode 1))
   #+end_src
@@ -774,7 +786,8 @@
 
   #+begin_src emacs-lisp
     (use-package haskell-mode
-      :ensure t)
+      :ensure t
+      :mode "\\.h[is]\\'")
   #+end_src
 
 * firefox
@@ -783,7 +796,8 @@
 
   #+begin_src emacs-lisp
     (use-package counsel-ffdata
-      :ensure t)
+      :ensure t
+      :commands (counsel-ffdata-firefox-history counsel-ffdata-firefox-bookmarks))
   #+end_src
 
 * pocket
@@ -792,7 +806,8 @@
 
   #+begin_src emacs-lisp
   (use-package pocket-reader
-    :ensure t)
+    :ensure t
+    :commands pocket-reader)
   #+end_src
 
 * rust
@@ -801,7 +816,8 @@
 
    #+begin_src emacs-lisp
      (use-package rustic
-       :ensure t)
+       :ensure t
+       :commands rustic-mode)
    #+end_src
 
 * ace-window
@@ -841,7 +857,8 @@
 
    #+begin_src emacs-lisp
    (use-package restclient
-     :ensure t)
+     :ensure t
+     :commands restclient-mode)
    #+end_src
 
 * engine
@@ -883,6 +900,7 @@
   #+begin_src emacs-lisp
     (use-package emms
       :ensure t
+      :commands emms
       :config
       (emms-all)
       (emms-default-players))
@@ -892,7 +910,8 @@
 
   #+begin_src emacs-lisp
     (use-package circe
-      :ensure t)
+      :ensure t
+      :commands circe)
   #+end_src
 
 * push org file changes
@@ -926,14 +945,17 @@
 
   #+begin_src emacs-lisp
     (use-package ox-hugo
-      :ensure t)
+      :ensure t
+      :requires org
+      :commands org-export-dispatch)
   #+end_src
 
 * scheme, guile, geiser
 
   #+begin_src emacs-lisp
     (use-package geiser
-      :ensure t)
+      :ensure t
+      :commands run-geiser)
   #+end_src
 
 
@@ -943,7 +965,8 @@
 
    #+begin_src emacs-lisp
      (use-package lua-mode
-       :ensure t)
+       :ensure t
+       :mode "\\.lua\\'")
    #+end_src
 
 ** factor
@@ -960,7 +983,9 @@
    
    #+begin_src emacs-lisp
      (use-package forth-mode
-       :ensure t)
+       :ensure t
+       :mode "\\.fth\\'"
+       :commands forth-mode)
    #+end_src
 
 * mode-line
